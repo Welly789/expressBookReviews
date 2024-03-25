@@ -3,7 +3,6 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
-const axios = require('axios');
 
 const doesExist = (username)=>{
   let userswithsamename = users.filter((user)=>{
@@ -30,68 +29,86 @@ public_users.post("/register", (req,res) => {
     return res.status(404).json({message: "Unable to register user, no username or password provided."});
 });
 
-// DONE WITH PROMISE CALL BACKS
+// TASK 10 USING ASYNC CALL BACK FUNCTION
+async function getAsyncBooks() {
+    return books;
+};
+// Get the book list available in the shop using the promise.then function to provide an async response
+public_users.get('/', async function (req, res) {
+    try {
+        const bookList = await getAsyncBooks();
+        return res.status(200).send(JSON.stringify({bookList},null,4));
+    } catch (error) {
+        return res.status(500).send('Error retrieving book list');
+    }
+});
+
 // promise function to get book data
 let getBooks = new Promise((resolve,reject) => {
     resolve(books);
 });
-// Get the book list available in the shop using the promise.then function to provide an async response
-public_users.get('/', function (req, res) {
-    getBooks.then((book_list) => {
-        return res.status(200).send(JSON.stringify({book_list},null,4));
-    });
-});
 
-// DONE
 // Get book details based on ISBN using promise and callbacks
-public_users.get('/isbn/:isbn',function (req, res) {
-    getBooks.then((book_list) => {
-        const isbn = parseInt(req.params.isbn);
-        if (isbn >= 1 && isbn <= 10){
-            let isbn_book = book_list[isbn];
-            return res.status(200).send(JSON.stringify({isbn_book},null,4));
-        } else {
-            return res.status(204).send("Please select appropriate isbn")
-        }
-    })
+public_users.get('/isbn/:isbn', async function (req, res) {
+    try {
+        getBooks.then((bookList) => {
+            const isbn = parseInt(req.params.isbn);
+            if (isbn >= 1 && isbn <= 10){
+                let isbn_book = bookList[isbn];
+                return res.status(200).send(JSON.stringify({isbn_book},null,4));
+            } else {
+                return res.status(204).send("Please select appropriate isbn")
+            }
+        });
+    } catch (error) {
+        return res.status(500).send('Error retrieving book list');
+    }
 });
 
 // DONE
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-    getBooks.then((book_list) => {
-        const author = req.params.author;
-        let authors_books=[];
-        for(let i = 1; i < 10; i++) {
-            if(book_list[i].author.toLowerCase() === author.toLowerCase()){
-                authors_books.push(book_list[i]);
+public_users.get('/author/:author', async function (req, res) {
+    try {
+        getBooks.then((bookList) => {
+            const author = req.params.author;
+            let authors_books=[];
+            for(let i = 1; i < 10; i++) {
+                if(bookList[i].author.toLowerCase() === author.toLowerCase()){
+                    authors_books.push(bookList[i]);
+                }
             }
-        }
-        if(authors_books.length > 0){
-            return res.status(200).send(JSON.stringify({authors_books},null,4));
-        } else {
-            return res.status(204).send("No books in the database written by that author");
-        }
-    });
+            if(authors_books.length > 0){
+                return res.status(200).send(JSON.stringify({authors_books},null,4));
+            } else {
+                return res.status(204).send("No books in the database written by that author");
+            }
+        });
+    } catch (error) {
+        return res.status(500).send('Error retrieving book list');
+    }
 });
 
 // DONE
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-    getBooks.then((book_list) => {
-        const title = req.params.title;
-        let book_title = [];
-        for(let i = 1; i < 10; i++){
-            if(books[i].title.toLowerCase() === title.toLowerCase()){
-                book_title.push(book_list[i]);
+public_users.get('/title/:title', async function (req, res) {
+    try {
+        getBooks.then((bookList) => {
+            const title = req.params.title;
+            let book_title = [];
+            for(let i = 1; i < 10; i++){
+                if(bookList[i].title.toLowerCase() === title.toLowerCase()){
+                    book_title.push(bookList[i]);
+                }
             }
-        }
-        if(book_title.length > 0){
-            return res.status(200).send(JSON.stringify({book_title},null,4));
-        } else {
-            return res.status(204).send("No books with that title are in the database");
-        }
-    });
+            if(book_title.length > 0){
+                return res.status(200).send(JSON.stringify({book_title},null,4));
+            } else {
+                return res.status(204).send("No books with that title are in the database");
+            }
+        });
+    } catch (error) {
+        return res.status(500).send('Error retrieving book list');
+    }
 });
 
 // DONE
