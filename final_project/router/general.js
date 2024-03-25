@@ -30,6 +30,7 @@ public_users.post("/register", (req,res) => {
 });
 
 // TASK 10 USING ASYNC CALL BACK FUNCTION
+// Async function to get book data
 async function getAsyncBooks() {
     return books;
 };
@@ -43,7 +44,8 @@ public_users.get('/', async function (req, res) {
     }
 });
 
-// promise function to get book data
+// TASKS 11, 12, AND 13
+// Promise function to get book data
 let getBooks = new Promise((resolve,reject) => {
     resolve(books);
 });
